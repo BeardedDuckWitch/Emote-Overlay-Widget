@@ -1,6 +1,54 @@
-#world {
-  color: #d1c021;
-  font-size: 20px;
-  font-family: 'Press Start 2P', cursive;
-  text-shadow: -1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000;
+body {
+	color: #d1c021;
+	font-size: 20px;
+	font-family: 'Press Start 2P', cursive;
+	text-shadow: -1.5px -1.5px 0 #000, 1.5px -1.5px 0 #000, -1.5px 1.5px 0 #000, 1.5px 1.5px 0 #000;
+	margin: 0px;
+	overflow: hidden;
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+}
+
+img {
+	margin-right: 0.25em;
+}
+
+#main {
+	margin: 1em;
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+	align-items: flex-start;
+}
+
+.emoteStreak {
+	margin: 0.125em;
+}
+
+@keyframes emoteGrow {
+
+	0% {
+		transform: scale(1, 1);
+	}
+
+	50% {
+		transform: scale(1.1, 1.1);
+	}
+
+	100% {
+		transform: scale(1, 1);
+	}
+}
+
+@keyframes emoteFadeAway {
+
+	0% {
+		transform: scale(1, 1);
+	}
+
+	100% {
+		transform: scale(0, 0);
+	}
 }

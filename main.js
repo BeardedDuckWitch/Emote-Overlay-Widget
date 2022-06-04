@@ -1,4 +1,19 @@
-let debug = false;
+const debug = false;
+const channel = "cagelight";
+const leniency = 5
+const end_delay = 10
+const minStreak = 3
+const userUniqueStreaks = false
+const emoteHitAnimationTime = 0.2
+const emoteEndAnimationTime = 0.5
+
+const streakEnabled = 1; //getUrlParam("streakEnabled", 1); // allows user to enable/disable the streak module
+const showEmoteEnabled = 0; //getUrlParam("showEmoteEnabled", 1); // allows user to enable/disable the showEmote module
+const showEmoteSizeMultiplier = 1; //getUrlParam("showEmoteSizeMultiplier", 1); // allows user to change the showEmote emote size multipler
+const sevenTVEnabled = 0; //getUrlParam("7tv", 0); // enables or disables support for 7tv.app emotes (only loads in channel emotes, not global)
+const showEmoteCooldown = 2; //getUrlParam("showEmoteCooldown", 6); // sets the cooldown for the showEmote command (in seconds)
+const emoteStreakText = decodeURIComponent("fishtastic!"); //decodeURIComponent(getUrlParam("emoteStreakText", "streak!")); // sets the ending text for the emote streak overlay (set to empty string to disable)
+
 
 function log(message) {
 	if (debug) {
@@ -23,10 +38,7 @@ function getUrlParam(parameter, defaultvalue) {
 	return urlparameter;
 }
 
-let channel = "cagelight";
-log(channel);
 let emotes = [];
-
 async function getEmotes(check) {
 	function returnResponse(response) {
 		return response.json();
@@ -49,11 +61,12 @@ async function getEmotes(check) {
 		},
 	}).then(returnResponse, logError);
 	if (!res.error || res.status == 200) {
-		twitchID = "113269771";
+		twitchID = res.id;
 	} else {
 		totalErrors.push("Error getting twitch ID");
 	}
-	//get FFZ emotes
+
+	// get FFZ emotes
 	res = await fetch(proxyurl + "https://api.frankerfacez.com/v1/room/" + channel, {
 		method: "GET",
 	}).then(returnResponse, logError);
@@ -74,7 +87,7 @@ async function getEmotes(check) {
 	} else {
 		totalErrors.push("Error getting ffz emotes");
 	}
-	//get all global ffz emotes
+	// get all global ffz emotes
 	res = await fetch(proxyurl + "https://api.frankerfacez.com/v1/set/global", {
 		method: "GET",
 	}).then(returnResponse, logError);
@@ -135,7 +148,7 @@ async function getEmotes(check) {
 		totalErrors.push("Error getting global bttv emotes");
 	}
 	if (sevenTVEnabled == 1) {
-		//get all 7TV emotes
+		// get all 7TV emotes
 		res = await fetch(proxyurl + `https://api.7tv.app/v2/users/${channel}/emotes`, {
 			method: "GET",
 		}).then(returnResponse, logError);
@@ -154,7 +167,7 @@ async function getEmotes(check) {
 		} else {
 			totalErrors.push("Error getting 7tv emotes");
 		}
-		//get all 7TV global emotes
+		// get all 7TV global emotes
 		res = await fetch(proxyurl + `https://api.7tv.app/v2/emotes/global`, {
 			method: "GET",
 		}).then(returnResponse, logError);
@@ -184,13 +197,38 @@ async function getEmotes(check) {
 	}
 }
 
+function sortEmotes() {
+	[...main.children]
+	.sort((a, b) => {
+			if (a.parent.streak == b.parent.streak) return 0
+			else return (a.parent.streak > b.parent.streak) ? 1 : -1
+		})
+		.forEach(node => main.appendChild(node));
+}
+
+let emoteStreaks = {}
+let emoteNodes
+
 class Streak {
 
 	constructor(emote, emoteURL) {
-		this.leniency = 5
-		this.minStreak = 3
 		this.emote = emote
 		this.emoteURL = emoteURL
+
+
+		let emoteImg = document.createElement('img')
+		emoteImg.src = emoteURL
+		this.emoteTxt = document.createElement('span')
+
+		this.element = document.createElement('div')
+		this.element.className = 'emoteStreak'
+		this.element.appendChild(emoteImg)
+		this.element.appendChild(this.emoteTxt)
+		main.appendChild(this.element)
+
+		this.element.style.display = 'none'
+
+		this.element.parent = this
 
 		this.resetStreak()
 	}
@@ -205,7 +243,7 @@ class Streak {
 		this.clearTimer()
 		this.timeout = setTimeout(() => {
 			this.resetStreak()
-		}, this.leniency * 1000)
+		}, leniency * 1000)
 	}
 
 	clearTimer() {
@@ -214,25 +252,39 @@ class Streak {
 	}
 
 	incrementStreak(user) {
-		if (this.users.has(user)) return
+		if (this.users.has(user) && userUniqueStreaks) return
 		this.users.add(user)
 
 		this.streak++
 		this.setTimer()
-		if (this.streak >= this.minStreak)
-			streakEvent(this)
+		if (this.streak >= minStreak)
+			this.streakEvent()
+	}
+
+	streakEvent() {
+		this.element.style.display = 'inline'
+		this.emoteTxt.innerText = "x" + this.streak + " " + emoteStreakText
+
+		this.element.style.animation = 'emoteGrow ease-in-out ' + emoteHitAnimationTime + 's'
+		clearTimeout(this.hitTimeout)
+		this.hitTimeout = setTimeout(() => {
+			this.element.style.animation = 'none'
+		}, emoteHitAnimationTime * 1000)
+
+		clearTimeout(this.endTimeout)
+		this.endTimeout = setTimeout(() => {
+			this.element.style.animation = 'emoteFadeAway ease-in-out forwards ' + emoteEndAnimationTime + 's'
+			this.endTimeout = setTimeout(() => {
+				this.element.style.animation = 'none'
+				this.element.style.display = 'none'
+			}, emoteEndAnimationTime * 1000)
+		}, end_delay * 1000)
+
+		sortEmotes()
 	}
 }
 
-let emoteStreaks = {}
-
 let showEmoteCooldownRef = new Date(); // the emote shown from using the !showemote <emote> command
-let streakEnabled = 1; //getUrlParam("streakEnabled", 1); // allows user to enable/disable the streak module
-let showEmoteEnabled = 0; //getUrlParam("showEmoteEnabled", 1); // allows user to enable/disable the showEmote module
-let showEmoteSizeMultiplier = 1; //getUrlParam("showEmoteSizeMultiplier", 1); // allows user to change the showEmote emote size multipler
-let sevenTVEnabled = 0; //getUrlParam("7tv", 0); // enables or disables support for 7tv.app emotes (only loads in channel emotes, not global)
-let showEmoteCooldown = 2; //getUrlParam("showEmoteCooldown", 6); // sets the cooldown for the showEmote command (in seconds)
-let emoteStreakText = decodeURIComponent("fishtastic!"); //decodeURIComponent(getUrlParam("emoteStreakText", "streak!")); // sets the ending text for the emote streak overlay (set to empty string to disable)
 log(`The streak module is ${streakEnabled} and the showEmote module is ${showEmoteEnabled}`);
 let streakCD = new Date().getTime();
 
@@ -255,11 +307,11 @@ function findEmotes(message, messageFull) {
 
 			let emote = findEmoteInMessage(messageSplit);
 			if (emote in emoteStreaks)
-				emoteStreaks[emote].incrementStreak(messageFull[14].match(/\d+/g)[0])
+				emoteStreaks[emote].incrementStreak(messageFull[13].match(/\d+/g)[0])
 			else {
 				let emoteURL = findEmoteURLInEmotes(emote);
 				emoteStreaks[emote] = new Streak(emote, emoteURL)
-				emoteStreaks[emote].incrementStreak(messageFull[14].match(/\d+/g)[0])
+				emoteStreaks[emote].incrementStreak(messageFull[13].match(/\d+/g)[0])
 			}
 		}
 
@@ -280,49 +332,6 @@ function findEmotes(message, messageFull) {
 			}
 			return null;
 		}
-	}
-}
-
-function streakEvent(streakObj) {
-	if (streakEnabled == 1) {
-		$("#main").empty();
-		$("#main").css("position", "absolute");
-		$("#main").css("top", "600");
-		$("#main").css("left", "35");
-		var img = $("<img />", {
-			src: streakObj.emoteURL
-		});
-		img.appendTo("#main");
-		var streakLength = $("#main").append("x" + streakObj.streak + " " + emoteStreakText);
-		streakLength.appendTo("#main");
-		gsap.to("#main", 0.15, {
-			scaleX: 1,
-			scaleY: 1,
-			onComplete: downscale
-		});
-
-		function downscale() {
-			gsap.to("#main", 0.15, {
-				scaleX: .9,
-				scaleY: .9
-			});
-		}
-		streakCD = new Date().getTime();
-		setInterval(() => {
-			if ((new Date().getTime() - streakCD) / 1000 > 10) {
-				streakCD = new Date().getTime();
-				gsap.to("#main", 0.2, {
-					scaleX: 0,
-					scaleY: 0,
-					delay: 0,
-					onComplete: remove
-				});
-
-				function remove() {
-					streakCD = new Date().getTime();
-				}
-			}
-		}, 1 * 1000);
 	}
 }
 
