@@ -1,9 +1,9 @@
 const debug = false;
-const channel = "charborg";
+const channel = "cagelight";
 const leniency = 5
 const end_delay = 10
 const minStreak = 3
-const userUniqueStreaks = true
+const userUniqueStreaks = false
 const emoteHitAnimationTime = 0.2
 const emoteEndAnimationTime = 0.5
 
@@ -199,10 +199,10 @@ async function getEmotes(check) {
 function sortEmotes() {
 	[...main.children]
 	.sort((a, b) => {
-			if (a.parent.streak == b.parent.streak) return 0
-			else return (a.parent.streak > b.parent.streak) ? 1 : -1
-		})
-		.forEach(node => main.appendChild(node));
+		if (a.parent.displayStreak == b.parent.displayStreak) return 0
+		else return (a.parent.displayStreak > b.parent.displayStreak) ? 1 : -1
+	})
+	.forEach(node => main.appendChild(node));
 }
 
 let emoteStreaks = {}
@@ -226,7 +226,6 @@ class Streak {
 		main.appendChild(this.element)
 
 		this.element.style.display = 'none'
-
 		this.element.parent = this
 
 		this.resetStreak()
@@ -262,7 +261,8 @@ class Streak {
 
 	streakEvent() {
 		this.element.style.display = 'inline'
-		this.emoteTxt.innerText = "x" + this.streak + " " + emoteStreakText
+		this.displayStreak = this.streak
+		this.emoteTxt.innerText = "x" + this.displayStreak + " " + emoteStreakText
 
 		this.element.style.animation = 'emoteGrow ease-in-out ' + emoteHitAnimationTime + 's'
 		clearTimeout(this.hitTimeout)
@@ -272,10 +272,11 @@ class Streak {
 
 		clearTimeout(this.endTimeout)
 		this.endTimeout = setTimeout(() => {
-			this.element.style.animation = 'emoteFadeAway ease-in-out forwards ' + emoteEndAnimationTime + 's'
+			this.element.style.animation = 'emoteFadeAway ease-in forwards ' + emoteEndAnimationTime + 's'
 			this.endTimeout = setTimeout(() => {
 				this.element.style.animation = 'none'
 				this.element.style.display = 'none'
+				this.displayStreak = 0
 			}, emoteEndAnimationTime * 1000)
 		}, end_delay * 1000)
 
@@ -303,6 +304,7 @@ function findEmotes(message, messageFull) {
 		} else {
 
 			let emote = findEmoteInMessage(messageSplit);
+			if (!emote) return
 			if (emote in emoteStreaks)
 				emoteStreaks[emote].incrementStreak(messageFull[13].match(/\d+/g)[0])
 			else {
