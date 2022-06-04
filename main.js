@@ -191,6 +191,7 @@ class Streak {
 	}
 	
 	resetStreak() {
+		this.users = new Set()
 		this.streak = 0
 		this.clearTimer()
 	}
@@ -205,7 +206,10 @@ class Streak {
 		clearTimeout(this.timeout)
 	}
 	
-	incrementStreak() {
+	incrementStreak(user) {
+		if (this.users.has(user)) return
+		this.users.add(user)
+		
 		this.streak++
 		this.setTimer()
 		if (this.streak >= this.minStreak)
