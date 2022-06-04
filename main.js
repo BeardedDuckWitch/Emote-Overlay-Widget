@@ -1,19 +1,3 @@
-const debug = false;
-const channel = "cagelight";
-const leniency = 5
-const end_delay = 10
-const minStreak = 3
-const userUniqueStreaks = false
-const emoteHitAnimationTime = 0.2
-const emoteEndAnimationTime = 0.5
-
-const showEmoteEnabled = 0; //getUrlParam("showEmoteEnabled", 1); // allows user to enable/disable the showEmote module
-const showEmoteSizeMultiplier = 1; //getUrlParam("showEmoteSizeMultiplier", 1); // allows user to change the showEmote emote size multipler
-const sevenTVEnabled = 0; //getUrlParam("7tv", 0); // enables or disables support for 7tv.app emotes (only loads in channel emotes, not global)
-const showEmoteCooldown = 2; //getUrlParam("showEmoteCooldown", 6); // sets the cooldown for the showEmote command (in seconds)
-const emoteStreakText = decodeURIComponent("fishtastic!"); //decodeURIComponent(getUrlParam("emoteStreakText", "streak!")); // sets the ending text for the emote streak overlay (set to empty string to disable)
-
-
 function log(message) {
 	if (debug) {
 		console.log(message);
@@ -262,7 +246,7 @@ class Streak {
 	streakEvent() {
 		this.element.style.display = 'inline'
 		this.displayStreak = this.streak
-		this.emoteTxt.innerText = "x" + this.displayStreak + " " + emoteStreakText
+		this.emoteTxt.innerText = "x" + this.displayStreak + emoteStreakText
 
 		this.element.style.animation = 'emoteGrow ease-in-out ' + emoteHitAnimationTime + 's'
 		clearTimeout(this.hitTimeout)
