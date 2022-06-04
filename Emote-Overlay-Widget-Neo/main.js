@@ -181,24 +181,18 @@ async function getEmotes(check) {
 
 class Streak {
 	
-	constructor() {
+	constructor(emote, emoteURL) {
 		this.leniency = 5
 		this.minStreak = 3
+		this.emote = emote
+		this.emoteURL = emoteURL
 		
 		this.resetStreak()
 	}
 	
 	resetStreak() {
-		this.emote = null
-		this.emoteURL = null
 		this.streak = 0
 		this.clearTimer()
-		console.log('aaa')
-	}
-	
-	clearTimer() {
-		if (!this.timeout) return
-		clearTimeout(this.timeout)
 	}
 	
 	setTimer() {
@@ -206,33 +200,20 @@ class Streak {
 		this.timeout = setTimeout(()=>{this.resetStreak()}, this.leniency * 1000)
 	}
 	
-	beginStreak(emote, emoteURL) {
-		this.resetStreak()
-		this.emote = emote
-		this.emoteURL = emoteURL
-		this.streak = 1
-		this.setTimer()
+	clearTimer() {
+		if (!this.timeout) return
+		clearTimeout(this.timeout)
 	}
 	
 	incrementStreak() {
 		this.streak++
 		this.setTimer()
 		if (this.streak >= this.minStreak)
-			streakEvent()
+			streakEvent(this)
 	}
-	
-	checkEmote(emote, emoteURL) {
-		if (emote == this.emote) {
-			this.incrementStreak()
-		} else if (this.streak < this.minStreak) {
-			this.beginStreak(emote, emoteURL)
-		}
-	}
-	
-	
 }
 
-let emoteStreak = new Streak
+let emoteStreaks = {}
 
 let showEmoteCooldownRef = new Date(); // the emote shown from using the !showemote <emote> command
 let streakEnabled = 1;//getUrlParam("streakEnabled", 1); // allows user to enable/disable the streak module
@@ -250,13 +231,25 @@ function findEmotes(message, messageFull) {
       let emoteUsed = messageFull[emoteUsedPos].split("emotes=").pop();
       messageSplit = message.split(" ");
       if (messageFull[emoteUsedPos].startsWith("emotes=") && emoteUsed.length > 1) {
+		  
             let emote = message.substring(parseInt(emoteUsed.split(":")[1].split("-")[0]), parseInt(emoteUsed.split(":")[1].split("-")[1]) + 1);
-            let emoteURL = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUsed.split(":")[0]}/default/dark/2.0`;
-            emoteStreak.checkEmote(emote, emoteURL)
+            if(emote in emoteStreaks)
+				emoteStreaks[emote].incrementStreak()
+			else {
+				let emoteURL = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUsed.split(":")[0]}/default/dark/2.0`;
+				emoteStreaks[emote] = new Streak(emote, emoteURL)
+				emoteStreaks[emote].incrementStreak()
+			}
       } else {
-			let emote = findEmoteInMessage(messageSplit);
-			let emoteURL = findEmoteURLInEmotes(emote);
-			emoteStreak.checkEmote(emote, emoteURL)
+		  
+            let emote = findEmoteInMessage(messageSplit);
+            if(emote in emoteStreaks)
+				emoteStreaks[emote].incrementStreak()
+			else {
+				let emoteURL = findEmoteURLInEmotes(emote);
+				emoteStreaks[emote] = new Streak(emote, emoteURL)
+				emoteStreaks[emote].incrementStreak()
+			}
       }
 
         function findEmoteInMessage(message) {
@@ -278,15 +271,15 @@ function findEmotes(message, messageFull) {
     }
 }
 
-function streakEvent() {
+function streakEvent(streakObj) {
     if (streakEnabled == 1) {
         $("#main").empty();
         $("#main").css("position", "absolute");
         $("#main").css("top", "600");
         $("#main").css("left", "35");
-        var img = $("<img />", { src: emoteStreak.emoteURL });
+        var img = $("<img />", { src: streakObj.emoteURL });
         img.appendTo("#main");
-        var streakLength = $("#main").append("x" + emoteStreak.streak + " " + emoteStreakText);
+        var streakLength = $("#main").append("x" + streakObj.streak + " " + emoteStreakText);
         streakLength.appendTo("#main");
         gsap.to("#main", 0.15, { scaleX: 1, scaleY: 1, onComplete: downscale });
         function downscale() {
