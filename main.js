@@ -245,21 +245,21 @@ function findEmotes(message, messageFull) {
 
 			let emote = message.substring(parseInt(emoteUsed.split(":")[1].split("-")[0]), parseInt(emoteUsed.split(":")[1].split("-")[1]) + 1);
 			if (emote in emoteStreaks)
-				emoteStreaks[emote].incrementStreak()
+				emoteStreaks[emote].incrementStreak(messageFull[14].match(/\d+/g)[0])
 			else {
 				let emoteURL = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUsed.split(":")[0]}/default/dark/2.0`;
 				emoteStreaks[emote] = new Streak(emote, emoteURL)
-				emoteStreaks[emote].incrementStreak()
+				emoteStreaks[emote].incrementStreak(messageFull[14].match(/\d+/g)[0])
 			}
 		} else {
 
 			let emote = findEmoteInMessage(messageSplit);
 			if (emote in emoteStreaks)
-				emoteStreaks[emote].incrementStreak()
+				emoteStreaks[emote].incrementStreak(messageFull[14].match(/\d+/g)[0])
 			else {
 				let emoteURL = findEmoteURLInEmotes(emote);
 				emoteStreaks[emote] = new Streak(emote, emoteURL)
-				emoteStreaks[emote].incrementStreak()
+				emoteStreaks[emote].incrementStreak(messageFull[14].match(/\d+/g)[0])
 			}
 		}
 
