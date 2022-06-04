@@ -21,7 +21,7 @@ function getUrlParam(parameter, defaultvalue) {
     return urlparameter;
 }
 
-let channel = "charborg";
+let channel = "cagelight";
 log(channel);
 let emotes = [];
 
@@ -178,12 +178,63 @@ async function getEmotes(check) {
         $("#errors").html(`Successfully loaded ${emotes.length} emotes.`).delay(2000).fadeOut(300);
     }
 }
-let timer = 10; //seconds
-let counter = 0;
-let currentStreak = { streak: 1, emote: null, emoteURL: null }; // the current emote streak being used in chat
-let currentEmote; // the current emote being used in chat
+
+class Streak {
+	
+	constructor() {
+		this.leniency = 5
+		this.minStreak = 3
+		
+		this.resetStreak()
+	}
+	
+	resetStreak() {
+		this.emote = null
+		this.emoteURL = null
+		this.streak = 0
+		this.clearTimer()
+		console.log('aaa')
+	}
+	
+	clearTimer() {
+		if (!this.timeout) return
+		clearTimeout(this.timeout)
+	}
+	
+	setTimer() {
+		this.clearTimer()
+		this.timeout = setTimeout(()=>{this.resetStreak()}, this.leniency * 1000)
+	}
+	
+	beginStreak(emote, emoteURL) {
+		this.resetStreak()
+		this.emote = emote
+		this.emoteURL = emoteURL
+		this.streak = 1
+		this.setTimer()
+	}
+	
+	incrementStreak() {
+		this.streak++
+		this.setTimer()
+		if (this.streak >= this.minStreak)
+			streakEvent()
+	}
+	
+	checkEmote(emote, emoteURL) {
+		if (emote == this.emote) {
+			this.incrementStreak()
+		} else if (this.streak < this.minStreak) {
+			this.beginStreak(emote, emoteURL)
+		}
+	}
+	
+	
+}
+
+let emoteStreak = new Streak
+
 let showEmoteCooldownRef = new Date(); // the emote shown from using the !showemote <emote> command
-let minStreak = 3;//getUrlParam("minStreak", 5) > 2 ? getUrlParam("minStreak", 5) : 5; // minimum emote streak to trigger overlay effects (Minimum value allowed is 3)
 let streakEnabled = 1;//getUrlParam("streakEnabled", 1); // allows user to enable/disable the streak module
 let showEmoteEnabled = 0;//getUrlParam("showEmoteEnabled", 1); // allows user to enable/disable the showEmote module
 let showEmoteSizeMultiplier = 1;//getUrlParam("showEmoteSizeMultiplier", 1); // allows user to change the showEmote emote size multipler
@@ -198,35 +249,14 @@ function findEmotes(message, messageFull) {
       let emoteUsedPos = messageFull[4].startsWith("emotes=") ? 4 : messageFull[5].startsWith("emote-only=") ? 6 : 5;
       let emoteUsed = messageFull[emoteUsedPos].split("emotes=").pop();
       messageSplit = message.split(" ");
-      if (messageSplit.includes(currentStreak.emote)) {
-          aux = new Date().getTime();
-          if(aux < counter + (timer * 1000)){
-            currentStreak.streak++;
-            streakEvent();
-          }
-          else {
-            currentStreak.streak = 1;
-            currentStreak.emote = null;
-          }
-      } // add to emote streak
-      else if (messageFull[emoteUsedPos].startsWith("emotes=") && emoteUsed.length > 1) {
-          aux = new Date().getTime();
-          if(aux > counter + (timer * 1000)){
-            // default twitch emotes
-            currentStreak.streak = 1;
-            currentStreak.emote = message.substring(parseInt(emoteUsed.split(":")[1].split("-")[0]), parseInt(emoteUsed.split(":")[1].split("-")[1]) + 1);
-            currentStreak.emoteURL = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUsed.split(":")[0]}/default/dark/2.0`;
-            counter = new Date().getTime();
-          }
-      } else{
-          aux = new Date().getTime();
-          if(aux > counter + (timer * 1000)){
-            // find bttv/ffz emotes
-            currentStreak.streak = 1;
-            currentStreak.emote = findEmoteInMessage(messageSplit);
-            currentStreak.emoteURL = findEmoteURLInEmotes(currentStreak.emote);
-            counter = new Date().getTime();
-          }
+      if (messageFull[emoteUsedPos].startsWith("emotes=") && emoteUsed.length > 1) {
+            let emote = message.substring(parseInt(emoteUsed.split(":")[1].split("-")[0]), parseInt(emoteUsed.split(":")[1].split("-")[1]) + 1);
+            let emoteURL = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUsed.split(":")[0]}/default/dark/2.0`;
+            emoteStreak.checkEmote(emote, emoteURL)
+      } else {
+			let emote = findEmoteInMessage(messageSplit);
+			let emoteURL = findEmoteURLInEmotes(emote);
+			emoteStreak.checkEmote(emote, emoteURL)
       }
 
         function findEmoteInMessage(message) {
@@ -249,14 +279,14 @@ function findEmotes(message, messageFull) {
 }
 
 function streakEvent() {
-    if (currentStreak.streak >= minStreak && streakEnabled == 1) {
+    if (streakEnabled == 1) {
         $("#main").empty();
         $("#main").css("position", "absolute");
         $("#main").css("top", "600");
         $("#main").css("left", "35");
-        var img = $("<img />", { src: currentStreak.emoteURL });
+        var img = $("<img />", { src: emoteStreak.emoteURL });
         img.appendTo("#main");
-        var streakLength = $("#main").append("x" + currentStreak.streak + " " + emoteStreakText);
+        var streakLength = $("#main").append("x" + emoteStreak.streak + " " + emoteStreakText);
         streakLength.appendTo("#main");
         gsap.to("#main", 0.15, { scaleX: 1, scaleY: 1, onComplete: downscale });
         function downscale() {
