@@ -219,6 +219,7 @@ class Streak {
 		this.users = new Set()
 		this.streak = 0
 		this.clearTimer()
+		clearTimeout(this.deadline)
 	}
 
 	setTimer() {
@@ -239,6 +240,14 @@ class Streak {
 
 		this.streak++
 		this.setTimer()
+		
+		if (this.streak == minStreak) { // begin the deadline timer
+			clearTimeout(this.deadline)
+			this.deadline = setTimeout(()=>{
+				this.resetStreak()
+			}, streakDeadline * 1000)
+		}
+		
 		if (this.streak >= minStreak)
 			this.streakEvent()
 	}
@@ -262,7 +271,7 @@ class Streak {
 				this.element.style.display = 'none'
 				this.displayStreak = 0
 			}, emoteEndAnimationTime * 1000)
-		}, end_delay * 1000)
+		}, endDelay * 1000)
 
 		sortEmotes()
 	}
