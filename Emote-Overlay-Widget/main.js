@@ -191,7 +191,7 @@ let showEmoteEnabled = 0;//getUrlParam("showEmoteEnabled", 1); // allows user to
 let showEmoteSizeMultiplier = 1;//getUrlParam("showEmoteSizeMultiplier", 1); // allows user to change the showEmote emote size multipler
 let sevenTVEnabled = 0;//getUrlParam("7tv", 0); // enables or disables support for 7tv.app emotes (only loads in channel emotes, not global)
 let showEmoteCooldown = 2; //getUrlParam("showEmoteCooldown", 6); // sets the cooldown for the showEmote command (in seconds)
-let emoteStreakText = decodeURIComponent("fishtastic!"); //decodeURIComponent(getUrlParam("emoteStreakText", "streak!")); // sets the ending text for the emote streak overlay (set to empty string to disable)
+let emoteStreakText = decodeURIComponent(""); //decodeURIComponent(getUrlParam("emoteStreakText", "streak!")); // sets the ending text for the emote streak overlay (set to empty string to disable)
 log(`The streak module is ${streakEnabled} and the showEmote module is ${showEmoteEnabled}`);
 let streakCD = new Date().getTime();
 
