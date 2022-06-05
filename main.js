@@ -184,14 +184,14 @@ let emoteStreaks = {}
 let emoteNodes = []
 
 function sortEmotes() {
-	
+
     while (main.firstChild)
         main.removeChild(main.firstChild);
-        
+
 	emoteNodes = emoteNodes.sort((a, b) => {
 		return a.parent.displayStreak - b.parent.displayStreak
 	})
-	
+
 	emoteNodes.forEach((node) => {if (node.parent.displayStreak) main.appendChild(node)});
 }
 
@@ -214,7 +214,7 @@ class Streak {
 
 		this.element.style.display = 'none'
 		this.element.parent = this
-		
+
 		emoteNodes.push(this.element)
 
 		this.resetStreak()
@@ -342,18 +342,12 @@ function showEmote(message, messageFull) {
 			let emoteUsed = findEmoteInMessage(messageSplit);
 			let emoteLink = findEmoteURLInEmotes(emoteUsed);
 			if (emoteLink) {
-				return showEmoteEvent({
-					emoteName: emoteUsed,
-					emoteURL: emoteLink
-				});
+				return showEmoteEvent({emoteName: emoteUsed, emoteURL: emoteLink });
 			}
 		} else {
 			let emoteUsed = message.substring(parseInt(emoteUsedID.split(":")[1].split("-")[0]), parseInt(emoteUsedID.split(":")[1].split("-")[1]) + 1);
 			let emoteLink = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUsedID.split(":")[0]}/default/dark/2.0`;
-			return showEmoteEvent({
-				emoteName: emoteUsed,
-				emoteURL: emoteLink
-			});
+			return showEmoteEvent({ emoteName: emoteUsed, emoteURL: emoteLink });
 		}
 
 		function findEmoteInMessage(message) {
@@ -401,22 +395,11 @@ function showEmoteEvent(emote) {
 			$("#showEmote").css("top", xy[1] + "px");
 			$("#showEmote").css("left", xy[0] + "px");
 			log("creating showEmote");
-			var img = $("<img />", {
-				src: image,
-				style: `transform: scale(${showEmoteSizeMultiplier}, ${showEmoteSizeMultiplier})`
-			});
+			var img = $("<img />", {src: image, style: `transform: scale(${showEmoteSizeMultiplier}, ${showEmoteSizeMultiplier})`});
 			img.appendTo("#showEmote");
-			gsap.to("#showEmote", 1, {
-				autoAlpha: 1,
-				onComplete: anim2
-			});
-
+			gsap.to("#showEmote", 1, {autoAlpha: 1, onComplete: anim2 });
 			function anim2() {
-				gsap.to("#showEmote", 1, {
-					autoAlpha: 0,
-					delay: 4,
-					onComplete: remove
-				});
+				gsap.to("#showEmote", 1, { autoAlpha: 0, delay: 4, onComplete: remove });
 			}
 
 			function remove() {
