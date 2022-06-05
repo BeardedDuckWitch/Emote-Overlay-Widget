@@ -50,7 +50,7 @@ async function getEmotes(check) {
 	}
 
 	// get FFZ emotes
-	res = await fetch(proxyurl + "https://api.frankerfacez.com/v1/room/" + channel, {
+	res = await fetch(proxyurl + "https://api.frankerfacez.com/v1/room/" + channelFFZ, {
 		method: "GET",
 	}).then(returnResponse, logError);
 	if (!res.error) {
@@ -130,9 +130,9 @@ async function getEmotes(check) {
 	} else {
 		totalErrors.push("Error getting global bttv emotes");
 	}
-	if (sevenTVEnabled == 1) {
+	if (channel7TV) {
 		// get all 7TV emotes
-		res = await fetch(proxyurl + `https://api.7tv.app/v2/users/${channel}/emotes`, {
+		res = await fetch(proxyurl + `https://api.7tv.app/v2/users/${channel7TV}/emotes`, {
 			method: "GET",
 		}).then(returnResponse, logError);
 		if (!res.error || res.status == 200) {
@@ -180,17 +180,20 @@ async function getEmotes(check) {
 	}
 }
 
-function sortEmotes() {
-	[...main.children]
-	.sort((a, b) => {
-		if (a.parent.displayStreak == b.parent.displayStreak) return 0
-		else return (a.parent.displayStreak > b.parent.displayStreak) ? 1 : -1
-	})
-	.forEach(node => main.appendChild(node));
-}
-
 let emoteStreaks = {}
-let emoteNodes
+let emoteNodes = []
+
+function sortEmotes() {
+	
+    while (main.firstChild)
+        main.removeChild(main.firstChild);
+        
+	emoteNodes = emoteNodes.sort((a, b) => {
+		return a.parent.displayStreak - b.parent.displayStreak
+	})
+	
+	emoteNodes.forEach((node) => {if (node.parent.displayStreak) main.appendChild(node)});
+}
 
 class Streak {
 
@@ -211,8 +214,11 @@ class Streak {
 
 		this.element.style.display = 'none'
 		this.element.parent = this
+		
+		emoteNodes.push(this.element)
 
 		this.resetStreak()
+		this.displayStreak = 0
 	}
 
 	resetStreak() {
@@ -260,14 +266,14 @@ class Streak {
 		this.element.style.animation = 'emoteGrow ease-in-out ' + emoteHitAnimationTime + 's'
 		clearTimeout(this.hitTimeout)
 		this.hitTimeout = setTimeout(() => {
-			this.element.style.animation = 'none'
+			this.element.style.animation = ''
 		}, emoteHitAnimationTime * 1000)
 
 		clearTimeout(this.endTimeout)
 		this.endTimeout = setTimeout(() => {
 			this.element.style.animation = 'emoteFadeAway ease-in forwards ' + emoteEndAnimationTime + 's'
 			this.endTimeout = setTimeout(() => {
-				this.element.style.animation = 'none'
+				this.element.style.animation = ''
 				this.element.style.display = 'none'
 				this.displayStreak = 0
 			}, emoteEndAnimationTime * 1000)
