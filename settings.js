@@ -4,7 +4,6 @@ const channel = "xqc";
 const channelFFZ = "xqcow";
 const channel7TV = "xqcow";
 
-
 const leniency = 5
 const endDelay = 10
 const streakDeadline = 30
