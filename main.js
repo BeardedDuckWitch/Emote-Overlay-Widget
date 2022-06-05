@@ -240,14 +240,14 @@ class Streak {
 
 		this.streak++
 		this.setTimer()
-		
+
 		if (this.streak == minStreak) { // begin the deadline timer
 			clearTimeout(this.deadline)
 			this.deadline = setTimeout(()=>{
 				this.resetStreak()
 			}, streakDeadline * 1000)
 		}
-		
+
 		if (this.streak >= minStreak)
 			this.streakEvent()
 	}
@@ -288,11 +288,11 @@ function findEmotes(message, messageFull) {
 
 			let emote = message.substring(parseInt(emoteUsed.split(":")[1].split("-")[0]), parseInt(emoteUsed.split(":")[1].split("-")[1]) + 1);
 			if (emote in emoteStreaks)
-				emoteStreaks[emote].incrementStreak(messageFull[14].match(/\d+/g)[0])
+				emoteStreaks[emote].incrementStreak(messageFull[13].match(/\d+/g)[0])
 			else {
 				let emoteURL = `https://static-cdn.jtvnw.net/emoticons/v2/${emoteUsed.split(":")[0]}/default/dark/2.0`;
 				emoteStreaks[emote] = new Streak(emote, emoteURL)
-				emoteStreaks[emote].incrementStreak(messageFull[14].match(/\d+/g)[0])
+				emoteStreaks[emote].incrementStreak(messageFull[13].match(/\d+/g)[0])
 			}
 		} else {
 
