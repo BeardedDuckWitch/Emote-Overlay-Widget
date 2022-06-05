@@ -189,8 +189,7 @@ function sortEmotes() {
         main.removeChild(main.firstChild);
         
 	emoteNodes = emoteNodes.sort((a, b) => {
-		if (a.parent.displayStreak === b.parent.displayStreak) return 0
-		else return a.parent.displayStreak - b.parent.displayStreak
+		return a.parent.displayStreak - b.parent.displayStreak
 	})
 	
 	emoteNodes.forEach((node) => {if (node.parent.displayStreak) main.appendChild(node)});
