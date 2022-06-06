@@ -270,20 +270,21 @@ class Streak {
 			this.element.style.animation = ''
 		}, emoteHitAnimationTime * 1000)
 
-		this.forceFadeout()
+		clearTimeout(this.endTimeout)
+		this.endTimeout = setTimeout(() => {
+			this.forceFadeout()
+		}, endDelay * 1000)
+
 		sortEmotes()
 	}
 	
 	forceFadeout() {
-		clearTimeout(this.endTimeout)
+		this.element.style.animation = 'emoteFadeAway ease-in forwards ' + emoteEndAnimationTime + 's'
 		this.endTimeout = setTimeout(() => {
-			this.element.style.animation = 'emoteFadeAway ease-in forwards ' + emoteEndAnimationTime + 's'
-			this.endTimeout = setTimeout(() => {
-				this.element.style.animation = ''
-				this.element.style.display = 'none'
-				this.displayStreak = 0
-			}, emoteEndAnimationTime * 1000)
-		}, endDelay * 1000)
+			this.element.style.animation = ''
+			this.element.style.display = 'none'
+			this.displayStreak = 0
+		}, emoteEndAnimationTime * 1000)
 	}
 }
 
