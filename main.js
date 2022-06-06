@@ -251,6 +251,7 @@ class Streak {
 			clearTimeout(this.deadline)
 			this.deadline = setTimeout(()=>{
 				this.resetStreak()
+				this.forceFadeout()
 			}, streakDeadline * 1000)
 		}
 
@@ -269,6 +270,11 @@ class Streak {
 			this.element.style.animation = ''
 		}, emoteHitAnimationTime * 1000)
 
+		this.forceFadeout()
+		sortEmotes()
+	}
+	
+	forceFadeout() {
 		clearTimeout(this.endTimeout)
 		this.endTimeout = setTimeout(() => {
 			this.element.style.animation = 'emoteFadeAway ease-in forwards ' + emoteEndAnimationTime + 's'
@@ -278,8 +284,6 @@ class Streak {
 				this.displayStreak = 0
 			}, emoteEndAnimationTime * 1000)
 		}, endDelay * 1000)
-
-		sortEmotes()
 	}
 }
 
